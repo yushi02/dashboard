@@ -45,7 +45,7 @@ def dashboard():
             error = f"Order ID {order_id} not found."
        
     return render_template('dashboard.html',order=order_data, error=error)
-@app.route('/order/<order_id>',method=['GET','POST'])
+@app.route('/order/<order_id>',methods=['GET','POST'])
 def order_details(order_id):
     order = orders_df[orders_df['Order'] == order_id]
     feedback=None
