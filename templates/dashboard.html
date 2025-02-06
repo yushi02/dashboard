@@ -83,27 +83,20 @@
             <input type="text" id="order_id" name="order_id" required>
             <button type="submit">Submit</button>
         </form>
-    <!-- <img src="data:image/png;base64,{{ plot_url }}" alt="Plot"> -->
-    <h1>Order Details</h1>
-    {% if order %}
-        <p><strong>Order ID:</strong> {{ order.Order }}</p>
-        <p><strong>Product ID:</strong> {{ order.Product_ID }}</p>
-        <p><strong>Product Name:</strong> {{ order.Product_name }}</p>
-        <p><strong>Price:</strong> ${{ order.Price }}</p>
-        <p><strong>Shipping Status:</strong> {{ order.Shipping_Status }}</p>
-        <p><strong>Payment Status:</strong> {{ order.Payment_Status }}</p>
-        {% if order.Payment_Status=='Paid' %}
-    <!-- Feedback form -->
-            <form method="POST">
-                <label for="feedback">Feedback:</label>
-                <textarea id="feedback" name="feedback"></textarea>
-                <button type="submit">Send Feedback</button>
-            </form>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
         {% endif %}
-    {% else %}
-        <p>{{ error }}</p>
-    {% endif %}
-    <img src="data:image/png;base64,{{ plot_url }}" alt="Plot">
+        {% if order %}
+            <div class="order-details">
+                <h2>Order ID: {{ order.Order }}</h2>
+                <p><strong>Price:</strong> ${{ order.Price }}</p>
+                <p><strong>Shipping Status:</strong> {{ order.Shipping_Status }}</p>
+                <p><strong>Payment Status:</strong> {{ order.Payment_Status }}</p>
+                <a href="{{ url_for('order_details', order_id=order.Order) }}" target="_blank">View Order Details</a>
+            </div>
+        {% endif %}
+    <!-- <img src="data:image/png;base64,{{ plot_url }}" alt="Plot"> -->
+
     </div>
 </body>
 </html>

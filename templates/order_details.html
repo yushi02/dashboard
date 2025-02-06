@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        .order-details {
+            background: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Order Details</h1>
+    {% if order %}
+        <p><strong>Order ID:</strong> {{ order.Order }}</p>
+        <p><strong>Product ID:</strong> {{ order.Product_ID }}</p>
+        <p><strong>Product Name:</strong> {{ order.Product_name }}</p>
+        <p><strong>Price:</strong> ${{ order.Price }}</p>
+        <p><strong>Shipping Status:</strong> {{ order.Shipping_Status }}</p>
+        <p><strong>Payment Status:</strong> {{ order.Payment_Status }}</p>
+        {% if order.Payment_Status=='Paid' %}
+    <!-- Feedback form -->
+            <form method="POST">
+                <label for="feedback">Feedback:</label>
+                <textarea id="feedback" name="feedback"></textarea>
+                <button type="submit">Send Feedback</button>
+            </form>
+        {% endif %}
+    {% else %}
+        <p>{{ error }}</p>
+    {% endif %}
+    {% else %}
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
