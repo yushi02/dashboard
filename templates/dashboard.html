@@ -25,6 +25,7 @@
             padding: 20px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
+            position: relative;
         }
         form {
             margin-bottom: 30px;
@@ -69,10 +70,51 @@
             font-size: 18px;
             text-align: center;
         }
+        .sidebar {
+            position: fixed;
+            right: -450px;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            transition: right 0.3s ease-in-out;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 10px;
+            border-bottom: 1px solid #555;
+        }
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar-toggle {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px 0 0 5px;
+        }
+        .slide-in {
+            right: 0 !important;
+        }
     </style>
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("slide-in");
+        }
+    </script>
 </head>
 <body>
-   
     <header>
         <h1>Order Dashboard</h1>
     </header>
@@ -95,8 +137,16 @@
                 <a href="{{ url_for('order_details', order_id=order.Order) }}" target="_blank">View Order Details</a>
             </div>
         {% endif %}
-    <!-- <img src="data:image/png;base64,{{ plot_url }}" alt="Plot"> -->
-
     </div>
+
+    <div class="sidebar" id="sidebar">
+        <h3>Products</h3>
+        <ul>
+            {% for product in product_names %}
+            <li><a href="{{ url_for('product_detail', product_name=product) }}" target="_blank">{{ product }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="sidebar-toggle" onclick="toggleSidebar()">Products</div>
 </body>
 </html>

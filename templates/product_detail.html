@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        .product-details {
+            background: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .product-details h2 {
+            margin-top: 0;
+        }
+        .product-details p {
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            animation: fadeEffect 0.5s;
+        }
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+    </style>
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Product Details</h1>
+    </header>
+    <div class="container">
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'Orders')">Orders</button>
+            <button class="tablinks" onclick="openTab(event, 'Analysis')">Analysis</button>
+        </div>
+
+        <div id="Orders" class="tabcontent">
+            <h2>Product Name: {{ product_name }}</h2>
+            <h3>Product Details:</h3>
+            <h3>Total Orders Placed: {{ product_data|length }}</h3>
+            <h3>Total Revenue: ${{ total_revenue }}</h3>
+            <h3>Product Description: {{ product_description }}</h3>
+            <h3>Category of Product: {{ product_category }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Price</th>
+                        <th>Shipping Status</th>
+                        <th>Payment Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in product_data %}
+                        <tr>
+                            <td>{{ order.Order }}</td>
+                            <td>${{ order.Price }}</td>
+                            <td>{{ order.Shipping_Status }}</td>
+                            <td>{{ order.Payment_Status }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="Analysis" class="tabcontent">
+            <h3>Analysis</h3>
+            <p>Detailed analysis of the product's performance.</p>
+            <h3>Order Quantity</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url1 }}" alt="Order Quantity Plot">
+            <h3>Price</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url2 }}" alt="Price Plot">
+            <h3>Shipping Status</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url3 }}" alt="Shipping Status Plot">
+            <h3>Payment Status</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url4 }}" alt="Payment Status Plot">
+            <h3>Stock Level</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url5 }}" alt="Stock Level Plot">
+            <h3>Discount</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url6 }}" alt="Discount Plot">
+            <h3>Location Distribution</h3>
+            <img src="data:image/png;base64,{{ plots.plot_url7 }}" alt="Location Distribution Pie Chart">
+        </div>
+    </div>
+</body>
+</html>
