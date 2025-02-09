@@ -84,6 +84,29 @@
             from {opacity: 0;}
             to {opacity: 1;}
         }
+        .analysis-container {
+            background: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            margin-right: 10px;
+        }
+        .analysis-container h3 {
+            margin-top: 0;
+        }
+        .analysis-container p {
+            margin: 10px 0;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -10px;
+        }
+        .row .analysis-container:last-child {
+            margin-right: 0;
+        }
     </style>
     <script>
         function openTab(evt, tabName) {
@@ -98,6 +121,14 @@
             }
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
+        }
+
+        function redirectToAnalysis(event) {
+            event.preventDefault();
+            var startDate = document.getElementById("start_date").value;
+            var endDate = document.getElementById("end_date").value;
+            var url = "{{ url_for('product_detail', product_name=product_name) }}?start_date=" + startDate + "&end_date=" + endDate;
+            window.location.href = url;
         }
     </script>
 </head>
@@ -125,6 +156,8 @@
                         <th>Price</th>
                         <th>Shipping Status</th>
                         <th>Payment Status</th>
+                        <th>Order Date</th>
+                        <th>Delivery Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,6 +167,8 @@
                             <td>${{ order.Price }}</td>
                             <td>{{ order.Shipping_Status }}</td>
                             <td>{{ order.Payment_Status }}</td>
+                            <td>{{ order.Order_date }}</td>
+                            <td>{{ order.Delivery_Date }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -143,20 +178,144 @@
         <div id="Analysis" class="tabcontent">
             <h3>Analysis</h3>
             <p>Detailed analysis of the product's performance.</p>
-            <h3>Order Quantity</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url1 }}" alt="Order Quantity Plot">
-            <h3>Price</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url2 }}" alt="Price Plot">
-            <h3>Shipping Status</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url3 }}" alt="Shipping Status Plot">
-            <h3>Payment Status</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url4 }}" alt="Payment Status Plot">
-            <h3>Stock Level</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url5 }}" alt="Stock Level Plot">
-            <h3>Discount</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url6 }}" alt="Discount Plot">
-            <h3>Location Distribution</h3>
-            <img src="data:image/png;base64,{{ plots.plot_url7 }}" alt="Location Distribution Pie Chart">
+            <form onsubmit="redirectToAnalysis(event)">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+                <button type="submit">Filter</button>
+            </form>
+            <div class="row">
+                {% if summaries.total_order_quantity %}
+                    <div class="analysis-container">
+                        <h3>Order Quantity</h3>
+                        <p>Total Order Quantity: {{ summaries.total_order_quantity }}</p>
+                        <p>Average Order Quantity: {{ summaries.average_order_quantity }}</p>
+                    </div>
+                {% endif %}
+                {% if summaries.total_revenue %}
+                    <div class="analysis-container">
+                        <h3>Price</h3>
+                        <p>Total Revenue: ${{ summaries.total_revenue }}</p>
+                        <p>Average Price: ${{ summaries.average_price }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.shipping_status_counts %}
+                    <div class="analysis-container">
+                        <h3>Shipping Status</h3>
+                        <ul>
+                            {% for status, count in summaries.shipping_status_counts.items() %}
+                                <li>{{ status }}: {{ count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% if summaries.payment_status_counts %}
+                    <div class="analysis-container">
+                        <h3>Payment Status</h3>
+                        <ul>
+                            {% for status, count in summaries.payment_status_counts.items() %}
+                                <li>{{ status }}: {{ count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.total_stock_level %}
+                    <div class="analysis-container">
+                        <h3>Stock Level</h3>
+                        <p>Total Stock Level: {{ summaries.total_stock_level }}</p>
+                        <p>Average Stock Level: {{ summaries.average_stock_level }}</p>
+                    </div>
+                {% endif %}
+                {% if summaries.total_discount %}
+                    <div class="analysis-container">
+                        <h3>Discount</h3>
+                        <p>Total Discount: {{ summaries.total_discount }}</p>
+                        <p>Average Discount: {{ summaries.average_discount }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.location_distribution %}
+                    <div class="analysis-container">
+                        <h3>Location Distribution</h3>
+                        <ul>
+                            {% for location, count in summaries.location_distribution.items() %}
+                                <li>{{ location }}: {{ count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% if summaries.datewise_revenue %}
+                    <div class="analysis-container">
+                        <h3>Date-wise Revenue</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for date, revenue in summaries.datewise_revenue.items() %}
+                                    <tr>
+                                        <td>{{ date }}</td>
+                                        <td>${{ revenue }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.monthly_revenue %}
+                    <div class="analysis-container">
+                        <h3>Monthly Revenue</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month, revenue in summaries.monthly_revenue.items() %}
+                                    <tr>
+                                        <td>{{ month }}</td>
+                                        <td>${{ revenue }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                {% if summaries.yearly_revenue %}
+                    <div class="analysis-container">
+                        <h3>Yearly Revenue</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for year, revenue in summaries.yearly_revenue.items() %}
+                                    <tr>
+                                        <td>{{ year }}</td>
+                                        <td>${{ revenue }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </body>

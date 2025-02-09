@@ -60,6 +60,34 @@
         .order-details button:hover {
             background-color: #45a049;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        .inline-container {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .inline-container .form-container {
+            flex:1;
+            margin-right: 20px;
+        }
     </style>
 </head>
 <body>
@@ -72,9 +100,11 @@
                 <h2>Order ID: {{ order.Order }}</h2>
                 <p><strong>Product ID:</strong> {{ order.Product_ID }}</p>
                 <p><strong>Product Name:</strong> {{ order.Product_name }}</p>
+                <p><strong>Customer Name:</strong> {{ order.Customer_Name }}</p>
                 <p><strong>Price:</strong> ${{ order.Price }}</p>
                 <p><strong>Shipping Status:</strong> {{ order.Shipping_Status }}</p>
                 <p><strong>Payment Status:</strong> {{ order.Payment_Status }}</p>
+                <p><strong>Customer Email:</strong>{{ order.Supplier_Contact }}</p>
                 {% if order.Payment_Status == 'Paid' %}
                     <!-- Feedback form -->
                     <form method="POST">
@@ -83,6 +113,62 @@
                         <button type="submit">Send Feedback</button>
                     </form>
                 {% endif %}
+                <!-- Inline Container for Customer Tag and Related Orders -->
+                <div class="inline-container">
+                    <!-- Customer Tag Form Container -->
+                    <div class="form-container">
+                        <form method="post">
+                            <input type="hidden" name="order_id" value="{{ order.Order }}">
+                            <label for="tag"><strong>Customer Tag:</strong></label>
+                            <select name="customer_tag">
+                                <option value="Regular" {% if order.Customer_Tag == "Regular" %}selected{% endif %}>Regular</option>
+                                <option value="VIP" {% if order.Customer_Tag == "VIP" %}selected{% endif %}>VIP</option>
+                                <option value="New" {% if order.Customer_Tag == "New" %}selected{% endif %}>New</option>
+                            </select>
+                            <button type="submit">Save</button>
+                        </form>
+                    </div>
+
+                    <!-- Related Orders Form Container -->
+                    <div class="form-container">
+                        <form method="get" action="{{ url_for('order_details', order_id=order.Order) }}">
+                            <label for="related_order_id"><strong>Related Orders:</strong></label>
+                            <select name="related_order_id" id="related_order_id" onchange="this.form.submit()">
+                                <option value="">Select an order ID</option>
+                                {% for related_order in related_orders %}
+                                    <option value="{{ related_order.Order }}">{{ related_order.Order }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Show Assigned Tag -->
+                <span>Tag: {{ order.Customer_Tag }}</span>
+
+                <!-- Show Customer Purchase History -->
+                <h3>{{order.Customer_Name}} Purchase History</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product Name</th>
+                            <th>Order Date</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer_order in customer_orders %}
+                            <tr>
+                                <td>{{ customer_order.Order }}</td>
+                                <td>{{ customer_order.Product_name }}</td>
+                                <td>{{ customer_order.Order_date }}</td>
+                                <td>${{ customer_order.Price }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
             {% else %}
                 <p>{{ error }}</p>
             {% endif %}
