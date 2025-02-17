@@ -2,7 +2,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from flask import Flask, redirect, request, render_template, url_for
-
+from utils import generate_summaries 
 
 
 app = Flask(__name__)
@@ -16,66 +16,15 @@ customer_df.columns = customer_df.columns.str.strip().str.replace(' ', '_')  # C
 # Concatenate DataFrames column-wise
 data = pd.concat([orders_df, customer_df], axis=1)
 
-def generate_summaries(product_name, start_date=None, end_date=None):
-    product_orders = data[data['Product_name'] == product_name]
-    
-    if start_date and end_date:
-        product_orders = product_orders[(product_orders['Order_Date'] >= start_date) & (product_orders['Order_Date'] <= end_date)]
-    
-    summaries = {}
 
-    # Summary of Order Quantity
-    if 'Order_Quantity' in product_orders.columns:
-        summaries['total_order_quantity'] = product_orders['Order_Quantity'].sum()
-        summaries['average_order_quantity'] = product_orders['Order_Quantity'].mean()
-
-    # Summary of Price
-    if 'Price' in product_orders.columns:
-        summaries['total_revenue'] = product_orders['Price'].sum()
-        summaries['average_price'] = product_orders['Price'].mean()
-
-    # Summary of Shipping Status
-    if 'Shipping_Status' in product_orders.columns:
-        summaries['shipping_status_counts'] = product_orders['Shipping_Status'].value_counts().to_dict()
-
-    # Summary of Payment Status
-    if 'Payment_Status' in product_orders.columns:
-        summaries['payment_status_counts'] = product_orders['Payment_Status'].value_counts().to_dict()
-
-    # Summary of Stock Level
-    if 'Stock_Level' in product_orders.columns:
-        summaries['total_stock_level'] = product_orders['Stock_Level'].sum()
-        summaries['average_stock_level'] = product_orders['Stock_Level'].mean()
-
-    # Summary of Discount
-    if 'Discount' in product_orders.columns:
-        summaries['total_discount'] = product_orders['Discount'].sum()
-        summaries['average_discount'] = product_orders['Discount'].mean()
-
-    # Summary of Location
-    if 'Location' in product_orders.columns:
-        summaries['location_distribution'] = product_orders['Location'].value_counts().to_dict()
-
-    # Time Series Analysis
-    if 'Order_Date' in product_orders.columns and 'Price' in product_orders.columns:
-        product_orders['Order_Date'] = pd.to_datetime(product_orders['Order_Date'])
-        datewise_revenue = product_orders.groupby(product_orders['Order_Date'].dt.date)['Price'].sum()
-        summaries['datewise_revenue'] = datewise_revenue.to_dict()
-
-        # Additional time series analysis
-        monthly_revenue = product_orders.groupby(product_orders['Order_Date'].dt.to_period('M'))['Price'].sum()
-        summaries['monthly_revenue'] = monthly_revenue.to_dict()
-
-        yearly_revenue = product_orders.groupby(product_orders['Order_Date'].dt.to_period('Y'))['Price'].sum()
-        summaries['yearly_revenue'] = yearly_revenue.to_dict()
-
-    return summaries
 
 @app.route('/', methods=['GET', 'POST'])
 def dashboard():
     order_data = None
     error = None
     product_names = data['Product_name'].unique()
+    
+    
     if request.method == 'POST':
         order_id = request.form.get('order_id')
         order = data[data['Order'] == order_id]
@@ -86,7 +35,14 @@ def dashboard():
             error = f"Order ID {order_id} not found."
        
     return render_template('dashboard.html', order=order_data, error=error, product_names=product_names)
-
+@app.route('/location_summary', methods=['GET'])
+def location_summary():
+    location = request.args.get('location')
+    location_orders = data[data['Location'] == location]
+    total_orders = location_orders.shape[0]
+    total_revenue = location_orders['Price'].sum()
+    summaries = generate_summaries(data, location=location)
+    return render_template('location_summary.html', summaries=summaries, location=location, total_orders=total_orders, total_revenue=total_revenue, location_orders=location_orders.to_dict(orient='records'))
 @app.route('/product/<product_name>', methods=['GET', 'POST'])
 def product_detail(product_name):
     product_orders = data[data['Product_name'] == product_name]
@@ -98,7 +54,7 @@ def product_detail(product_name):
         total_revenue = product_orders['Price'].sum()
         product_description = product_orders['Description'].iloc[0]
         product_category = product_orders['Category'].iloc[0]
-        summaries = generate_summaries(product_name, start_date, end_date)
+        summaries = generate_summaries(data,product_name, start_date, end_date)
         return render_template('product_detail.html', product_name=product_name, product_data=product_data, total_revenue=total_revenue, product_description=product_description, product_category=product_category, summaries=summaries, start_date=start_date, end_date=end_date)
     else:
         return "Product not found", 404
