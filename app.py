@@ -34,7 +34,7 @@ def dashboard():
         else:
             error = f"Order ID {order_id} not found."
        
-    return render_template('dashboard.html', order=order_data, error=error, product_names=product_names)
+    return render_template('index.html', order=order_data, error=error, product_names=product_names)
 @app.route('/location_summary', methods=['GET'])
 def location_summary():
     location = request.args.get('location')
