@@ -1,4 +1,15 @@
 import pandas as pd
+from textblob import TextBlob
+
+def analyze_sentiment(feedback):
+    if isinstance(feedback, str):
+        analysis = TextBlob(feedback)
+        polarity = 'Positive' if analysis.sentiment.polarity >= 0 else 'Negative'
+        subjectivity = analysis.sentiment.subjectivity
+        return polarity, subjectivity
+    else:
+        return None, None
+
 def generate_summaries(data,product_name=None, start_date=None, end_date=None,location=None):
     if product_name:
         product_orders = data[data['Product_name'] == product_name]

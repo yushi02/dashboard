@@ -85,7 +85,11 @@
                         {% endfor %}
                     </tbody>
                 </table>
-
+                {% if sentiment %}
+                    <h3>Feedback Sentiment Analysis</h3>
+                    <p><strong>Polarity:</strong> {{ sentiment.polarity }}</p>
+                    <p><strong>Subjectivity:</strong> {{ sentiment.subjectivity }}</p>
+                {% endif %}
             {% else %}
                 <p>{{ error }}</p>
             {% endif %}

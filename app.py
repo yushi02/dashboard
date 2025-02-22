@@ -2,8 +2,8 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from flask import Flask, redirect, request, render_template, url_for
-from utils import generate_summaries 
-
+from utils import generate_summaries ,analyze_sentiment
+import plotly.express as px
 
 app = Flask(__name__)
 
@@ -65,6 +65,7 @@ def order_details(order_id):
     feedback = None
     is_paid = False
     tag = None
+    sentiment=None
 
     if request.method == 'POST':
         tag = request.form.get('customer_tag', 'Unknown')  # Default to 'Unknown'
@@ -87,10 +88,21 @@ def order_details(order_id):
         related_order_id = request.args.get('related_order_id')
         if related_order_id:
             return redirect(url_for('order_details', order_id=related_order_id))
-        return render_template('order_details.html', order=order_data, feedback=feedback, is_paid=is_paid, tag=tag, related_orders=related_orders, customer_name=customer_name, customer_email=customer_email, customer_orders=customer_orders)
+        if 'Feedback' in order_data and order_data['Feedback']:
+            polarity, subjectivity = analyze_sentiment(order_data['Feedback'])
+            sentiment = {
+                'polarity': polarity,
+                'subjectivity': subjectivity
+            }
+        return render_template('order_details.html', order=order_data, feedback=feedback, is_paid=is_paid, tag=tag, related_orders=related_orders, customer_name=customer_name, customer_email=customer_email, customer_orders=customer_orders,sentiment=sentiment)
         
     else:
         return "Order not found", 404
-
+# @app.route('/graphs')
+# def graphs():
+    
+#     fig = px.bar(data, x='Product_name', y='Price', title='Total Revenue by Product')
+#     graphJSON = fig.to_json()
+#     return render_template('graphs.html', graphJSON=graphJSON)
 if __name__ == '__main__':
     app.run(debug=True)
