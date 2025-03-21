@@ -1,5 +1,8 @@
 import pandas as pd
 from textblob import TextBlob
+import json
+import plotly.express as px
+
 
 def analyze_sentiment(feedback):
     if isinstance(feedback, str):
@@ -72,3 +75,17 @@ def generate_summaries(data,product_name=None, start_date=None, end_date=None,lo
 
     return summaries
 
+def plot_graph(data, product_name):
+    # Plot number of orders from each location for the product
+    location_orders = data[data['Product_name'] == product_name]
+    location_order_counts = location_orders['Location'].value_counts().reset_index()
+    location_order_counts.columns = ['Location', 'Count']
+    location_fig = px.bar(location_order_counts, x='Location', y='Count', title=f'Number of Orders from Each Location for {product_name}')
+
+    # Plot total revenue over time for the product
+    product_orders = data[data['Product_name'] == product_name]
+    product_orders['Order_date'] = pd.to_datetime(product_orders['Order_date'])
+    product_orders = product_orders.sort_values(by='Order_date')
+    product_fig = px.line(product_orders, x='Order_date', y='Price', title=f'Total Revenue Over Time for {product_name}', labels={'Order_date': 'Order Date', 'Price': 'Total Revenue'})
+
+    return location_fig.to_json(), product_fig.to_json()

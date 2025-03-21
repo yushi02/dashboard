@@ -1,9 +1,10 @@
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import json
 from flask import Flask, redirect, request, render_template, url_for
-from utils import generate_summaries ,analyze_sentiment
-import plotly.express as px
+from utils import generate_summaries ,analyze_sentiment,plot_graph
+
 
 app = Flask(__name__)
 
@@ -16,10 +17,10 @@ customer_df.columns = customer_df.columns.str.strip().str.replace(' ', '_')  # C
 # Concatenate DataFrames column-wise
 data = pd.concat([orders_df, customer_df], axis=1)
 
-
+data = data.loc[:, ~data.columns.duplicated()]
 
 @app.route('/', methods=['GET', 'POST'])
-def dashboard():
+def index():
     order_data = None
     error = None
     product_names = data['Product_name'].unique()
@@ -55,7 +56,8 @@ def product_detail(product_name):
         product_description = product_orders['Description'].iloc[0]
         product_category = product_orders['Category'].iloc[0]
         summaries = generate_summaries(data,product_name, start_date, end_date)
-        return render_template('product_detail.html', product_name=product_name, product_data=product_data, total_revenue=total_revenue, product_description=product_description, product_category=product_category, summaries=summaries, start_date=start_date, end_date=end_date)
+        location_graphJSON, product_graphJSON = plot_graph(data, product_name)
+        return render_template('product_detail.html', product_name=product_name, product_data=product_data, total_revenue=total_revenue, product_description=product_description, product_category=product_category, summaries=summaries, start_date=start_date, end_date=end_date,location_graphJSON=json.loads(location_graphJSON),product_graphJSON=json.loads(product_graphJSON))
     else:
         return "Product not found", 404
 
@@ -88,21 +90,21 @@ def order_details(order_id):
         related_order_id = request.args.get('related_order_id')
         if related_order_id:
             return redirect(url_for('order_details', order_id=related_order_id))
+        total_purchases = data[data['Customer_Name'] == customer_name]['Price'].sum()
+        if total_purchases > 500:
+            data.loc[data['Customer_Name'] == customer_name, 'Customer_Tag'] = 'VIP'
+            data.to_excel("C://Users//lenovo//OneDrive//Desktop//dashboard//Product_Details.xlsx", index=False)
+            order_data['Customer_Tag'] = 'VIP'
         if 'Feedback' in order_data and order_data['Feedback']:
             polarity, subjectivity = analyze_sentiment(order_data['Feedback'])
             sentiment = {
                 'polarity': polarity,
                 'subjectivity': subjectivity
             }
-        return render_template('order_details.html', order=order_data, feedback=feedback, is_paid=is_paid, tag=tag, related_orders=related_orders, customer_name=customer_name, customer_email=customer_email, customer_orders=customer_orders,sentiment=sentiment)
+        return render_template('order_details.html', order=order_data, feedback=feedback, is_paid=is_paid, tag=tag, related_orders=related_orders, customer_name=customer_name, customer_email=customer_email, customer_orders=customer_orders,sentiment=sentiment,total_purchases=total_purchases)
         
     else:
         return "Order not found", 404
-# @app.route('/graphs')
-# def graphs():
-    
-#     fig = px.bar(data, x='Product_name', y='Price', title='Total Revenue by Product')
-#     graphJSON = fig.to_json()
-#     return render_template('graphs.html', graphJSON=graphJSON)
+
 if __name__ == '__main__':
     app.run(debug=True)

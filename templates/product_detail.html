@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-   
-    
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <header>
@@ -16,6 +15,7 @@
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Orders')">Orders</button>
             <button class="tablinks" onclick="openTab(event, 'Analysis')">Analysis</button>
+            <button class="tablinks" onclick="openTab(event,'Graphs')">Graphs</button>
         </div>
 
         <div id="Orders" class="tabcontent">
@@ -193,10 +193,43 @@
                 {% endif %}
             </div>
         </div>
+        <div id="Graphs" class="tabcontent">
+            <h3>Graphs</h3>
+            <div id="location_graph"></div>
+            <div id="product_graph"></div>
+        </div>
     </div>
+
     <script>
-        var productDetailUrl = "{{ url_for('product_detail', product_name=product_name) }}";
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            if (tabName === "Graphs") {
+                try {
+                    var locationGraphData = {{ location_graphJSON | tojson | safe }};
+                    var productGraphData = {{ product_graphJSON | tojson | safe }};
+
+                    Plotly.newPlot("location_graph", locationGraphData.data, locationGraphData.layout);
+                    Plotly.newPlot("product_graph", productGraphData.data, productGraphData.layout);
+                } catch (error) {
+                    console.error("Error rendering graphs:", error);
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementsByClassName("tablinks")[0].click();
+        });
     </script>
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>
 </html>

@@ -22,6 +22,8 @@
                 <p><strong>Shipping Status:</strong> {{ order.Shipping_Status }}</p>
                 <p><strong>Payment Status:</strong> {{ order.Payment_Status }}</p>
                 <p><strong>Customer Email:</strong>{{ order.Supplier_Contact }}</p>
+                <p><strong>Total Purchases:</strong> ${{total_purchases}}</p>
+                
                 {% if order.Payment_Status == 'Paid' %}
                     <!-- Feedback form -->
                     <form method="POST">
@@ -85,7 +87,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                {% if sentiment %}
+                {% if sentiment and  order.Payment_Status == 'Paid' %}
                     <h3>Feedback Sentiment Analysis</h3>
                     <p><strong>Polarity:</strong> {{ sentiment.polarity }}</p>
                     <p><strong>Subjectivity:</strong> {{ sentiment.subjectivity }}</p>
