@@ -2,7 +2,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import json
-from flask import Flask, redirect, request, render_template, url_for
+from flask import Flask, redirect, request, render_template, url_for,jsonify
 from utils import generate_summaries ,analyze_sentiment,plot_graph
 
 
@@ -105,6 +105,34 @@ def order_details(order_id):
         
     else:
         return "Order not found", 404
+@app.route('/api/extract', methods=['GET'])
+def extract_excel_data():
+    try:
+       
+        extracted_data = data.to_dict(orient='records')
+        return jsonify({"status": "success", "data": extracted_data}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
+# API Route 2: Update or Add New Data to Excel
+@app.route('/api/update', methods=['GET'])
+def update_excel_data():
+    try:
+        # Get the JSON payload from the request
+        new_data = request.get_json()
+
+        # Convert the JSON payload to a DataFrame
+        new_data_df = pd.DataFrame([new_data])
+
+        # Append the new data to the existing DataFrame
+        global data
+        data = pd.concat([data, new_data_df], ignore_index=True)
+
+        # Save the updated DataFrame back to the Excel file
+        data.to_excel("C://Users//lenovo//OneDrive//Desktop//dashboard//Product_Details.xlsx", index=False)
+        
+        return jsonify({"status": "success", "message": "Data updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True)

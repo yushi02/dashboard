@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Product Details</h1>
+    </header>
+    <div class="container product-details-container">
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'Orders')">Orders</button>
+            <button class="tablinks" onclick="openTab(event, 'Analysis')">Analysis</button>
+            <button class="tablinks" onclick="openTab(event,'Graphs')">Graphs</button>
+        </div>
+
+        <div id="Orders" class="tabcontent">
+            <h2>Product Name: {{ product_name }}</h2>
+            <h3>Product Details:</h3>
+            <h3>Total Orders Placed: {{ product_data|length }}</h3>
+            <h3>Total Revenue: ${{ total_revenue }}</h3>
+            <h3>Product Description: {{ product_description }}</h3>
+            <h3>Category of Product: {{ product_category }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Price</th>
+                        <th>Shipping Status</th>
+                        <th>Payment Status</th>
+                        <th>Order Date</th>
+                        <th>Delivery Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in product_data %}
+                        <tr>
+                            <td>{{ order.Order }}</td>
+                            <td>${{ order.Price }}</td>
+                            <td>{{ order.Shipping_Status }}</td>
+                            <td>{{ order.Payment_Status }}</td>
+                            <td>{{ order.Order_date }}</td>
+                            <td>{{ order.Delivery_Date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="Analysis" class="tabcontent">
+            <h3>Analysis</h3>
+            <p>Detailed analysis of the product's performance.</p>
+            <form onsubmit="redirectToAnalysis(event)">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+                <button type="submit">Filter</button>
+            </form>
+            <div class="row">
+                {% if summaries.total_order_quantity %}
+                    <div class="analysis-container">
+                        <h3>Order Quantity</h3>
+                        <p>Total Order Quantity: {{ summaries.total_order_quantity }}</p>
+                        <p>Average Order Quantity: {{ summaries.average_order_quantity }}</p>
+                    </div>
+                {% endif %}
+                {% if summaries.total_revenue %}
+                    <div class="analysis-container">
+                        <h3>Price</h3>
+                        <p>Total Revenue: ${{ summaries.total_revenue }}</p>
+                        <p>Average Price: ${{ summaries.average_price }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.shipping_status_counts %}
+                    <div class="analysis-container">
+                        <h3>Shipping Status</h3>
+                        <ul>
+                            {% for status, count in summaries.shipping_status_counts.items() %}
+                                <li>{{ status }}: {{ count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% if summaries.payment_status_counts %}
+                    <div class="analysis-container">
+                        <h3>Payment Status</h3>
+                        <ul>
+                            {% for status, count in summaries.payment_status_counts.items() %}
+                                <li>{{ status }}: {{ count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.total_stock_level %}
+                    <div class="analysis-container">
+                        <h3>Stock Level</h3>
+                        <p>Total Stock Level: {{ summaries.total_stock_level }}</p>
+                        <p>Average Stock Level: {{ summaries.average_stock_level }}</p>
+                    </div>
+                {% endif %}
+                {% if summaries.total_discount %}
+                    <div class="analysis-container">
+                        <h3>Discount</h3>
+                        <p>Total Discount: {{ summaries.total_discount }}</p>
+                        <p>Average Discount: {{ summaries.average_discount }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.location_distribution %}
+                    <div class="analysis-container">
+                        <h3>Location Distribution</h3>
+                        <ul>
+                            {% for location, count in summaries.location_distribution.items() %}
+                                <li>{{ location }}: {{ count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% if summaries.datewise_revenue %}
+                    <div class="analysis-container">
+                        <h3>Date-wise Revenue</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for date, revenue in summaries.datewise_revenue.items() %}
+                                    <tr>
+                                        <td>{{ date }}</td>
+                                        <td>${{ revenue }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if summaries.monthly_revenue %}
+                    <div class="analysis-container">
+                        <h3>Monthly Revenue</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month, revenue in summaries.monthly_revenue.items() %}
+                                    <tr>
+                                        <td>{{ month }}</td>
+                                        <td>${{ revenue }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                {% if summaries.yearly_revenue %}
+                    <div class="analysis-container">
+                        <h3>Yearly Revenue</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for year, revenue in summaries.yearly_revenue.items() %}
+                                    <tr>
+                                        <td>{{ year }}</td>
+                                        <td>${{ revenue }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div id="Graphs" class="tabcontent">
+            <h3>Graphs</h3>
+            <div id="location_graph"></div>
+            <div id="product_graph"></div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            if (tabName === "Graphs") {
+                try {
+                    var locationGraphData = {{ location_graphJSON | tojson | safe }};
+                    var productGraphData = {{ product_graphJSON | tojson | safe }};
+
+                    Plotly.newPlot("location_graph", locationGraphData.data, locationGraphData.layout);
+                    Plotly.newPlot("product_graph", productGraphData.data, productGraphData.layout);
+                } catch (error) {
+                    console.error("Error rendering graphs:", error);
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementsByClassName("tablinks")[0].click();
+        });
+    </script>
+</body>
+</html>

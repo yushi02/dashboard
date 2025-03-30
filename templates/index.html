@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    
+</head>
+<body>
+    <header>
+        <h1>Order Dashboard</h1>
+    </header>
+
+    <div class="container dashboard-container">
+        <form onsubmit="redirectToOrderDetails(event)">
+            <label for="order_id">Enter Order ID:</label>
+            <input type="text" id="order_id" name="order_id" required>
+            <button type="submit"> Submit</button>
+        </form>
+        <form onsubmit="redirectToLocation(event)">
+            <label for="location">Enter Location:</label>
+            <input type="text" id="location" name="location" required>
+            <button type="submit">Search by Location</button>
+        </form>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+       
+        
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <h3>Products</h3>
+        <ul>
+            {% for product in product_names %}
+            <li><a href="{{ url_for('product_detail', product_name=product) }}" target="_blank">{{ product }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="sidebar-toggle" onclick="toggleSidebar()">Products</div>
+    <script>
+        var orderDetailsUrl = "{{ url_for('order_details', order_id='') }}";
+        var locationUrl = "{{ url_for('location_summary') }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
